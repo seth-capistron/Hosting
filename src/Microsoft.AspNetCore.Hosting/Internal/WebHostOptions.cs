@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Search the primary assembly and configured assemblies.
             HostingStartupAssemblies = Split($"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}");
             HostingStartupExcludeAssemblies = Split(configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+            HostingStartupExtensions = Split(configuration[WebHostDefaults.HostingStartupExtensionsKey]);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
             if (!string.IsNullOrEmpty(timeout)
@@ -54,6 +55,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public IReadOnlyList<string> HostingStartupAssemblies { get; set; }
 
         public IReadOnlyList<string> HostingStartupExcludeAssemblies { get; set; }
+
+        public IReadOnlyList<string> HostingStartupExtensions { get; set; }
 
         public bool DetailedErrors { get; set; }
 

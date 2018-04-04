@@ -250,6 +250,25 @@ namespace Microsoft.AspNetCore.Hosting
                     }
                 }
 
+#if NETCOREAPP2_0
+                foreach (var extension in _options.HostingStartupExtensions)
+                {
+                    try
+                    {
+                        var path = Path.GetFullPath(extension);
+                        var loader = new StartupExtensionLoader(path);
+                        foreach (var startup in loader.GetStartups())
+                        {
+                            startup.Configure(this);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(new InvalidOperationException($"Startup extension '{extension}' failed to load. See the inner exception for more details.", ex));
+                    }
+                }
+#endif
+
                 if (exceptions.Count > 0)
                 {
                     hostingStartupErrors = new AggregateException(exceptions);

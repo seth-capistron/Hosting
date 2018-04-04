@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting
                 case Architecture.X64:
                     return ridBase + "-x64";
                 case Architecture.Arm:
-                    return ridBase + "-arm32";
+                    return ridBase + "-arm";
                 case Architecture.Arm64:
                     return ridBase + "-arm64";
             }

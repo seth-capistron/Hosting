@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string StartupAssemblyKey = "startupAssembly";
         public static readonly string HostingStartupAssembliesKey = "hostingStartupAssemblies";
         public static readonly string HostingStartupExcludeAssembliesKey = "hostingStartupExcludeAssemblies";
+        public static readonly string HostingStartupExtensionsKey = "hostingStartupExtensions";
 
         public static readonly string DetailedErrorsKey = "detailedErrors";
         public static readonly string EnvironmentKey = "environment";
