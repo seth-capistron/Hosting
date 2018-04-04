@@ -1,4 +1,5 @@
 ﻿#if FEATURE_LOAD_CONTEXT
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -9,21 +10,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal sealed class StartupExtensionConfig
     {
-        public static bool TryLoad(string configFile, out StartupExtensionConfig config)
-        {
-            try
-            {
-                config = new StartupExtensionConfig(configFile);
-                return true;
-            }
-            catch
-            {
-                config = null;
-                return false;
-            }
-        }
-
-        public StartupExtensionConfig(string configFile)
+        public StartupExtensionConfig(TextReader configFile)
         {
             var privateDeps = new HashSet<AssemblyName>();
             PrivateAssemblies = privateDeps;
@@ -34,14 +21,23 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new InvalidDataException("Root element should be 'StartupExtension'");
             }
 
-            var mainAssembly = doc.Root.Attribute("MainAssembly");
-            if (mainAssembly == null || string.IsNullOrEmpty(mainAssembly.Value))
+            var mainAssemblyAttr = doc.Root.Attribute("MainAssembly");
+            if (mainAssemblyAttr == null || string.IsNullOrEmpty(mainAssemblyAttr.Value))
             {
                 IXmlLineInfo line = doc.Root;
                 throw new InvalidDataException($"Missing required attribute 'MainAssembly' for StartupExtension on line {line.LineNumber}");
             }
 
-            MainAssembly = mainAssembly.Value;
+            var hostingVersionAttr = doc.Root.Attribute("MinHostingVersion");
+            Version hostingVersion = null;
+            if (hostingVersionAttr != null && !Version.TryParse(hostingVersionAttr.Value, out hostingVersion))
+            {
+                IXmlLineInfo line = hostingVersionAttr;
+                throw new InvalidDataException($"Value for MinHostingVersion '{hostingVersionAttr.Value}' is not a valid assembly version on line {line.LineNumber}");
+            }
+
+            MinHostingVersion = hostingVersion;
+            MainAssembly = mainAssemblyAttr.Value;
 
             foreach (var dep in doc.Root.Descendants("PrivateDependency"))
             {
@@ -57,7 +53,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         public IReadOnlyCollection<AssemblyName> PrivateAssemblies { get; }
-
+        public Version MinHostingVersion { get; private set; }
         public string MainAssembly { get; }
     }
 }

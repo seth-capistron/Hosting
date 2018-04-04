@@ -110,6 +110,14 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal(hostAssemblyName.CultureName, startupAssemblyName.CultureName);
         }
 
+        [Fact]
+        public void ItSkipsLoadingWhenMinVersionIsTooHigh()
+        {
+            var reader = new StringReader("<StartupExtension MinHostingVersion=\"99.99.99.99\" MainAssembly=\"SomeFile.dll\" />");
+            var config = new StartupExtensionConfig(reader);
+            var loader = new StartupExtensionLoader(config, AppContext.BaseDirectory);
+            Assert.Empty(loader.GetStartups());
+        }
 
         private string GetStartupExtensionPath(string name)
         {
