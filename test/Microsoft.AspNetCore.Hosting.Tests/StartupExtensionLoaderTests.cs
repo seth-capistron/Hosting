@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -83,6 +84,32 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal(hostAssemblyName.KeyPair, startupAssemblyName.KeyPair);
             Assert.Equal(hostAssemblyName.CultureName, startupAssemblyName.CultureName);
         }
+
+        [Fact]
+        public void DoesNotDowngradeDependenciesOfExtension()
+        {
+            var extPath = GetStartupExtensionPath("StartupExtensionWithWithUpgradedDeps");
+            var loader = new StartupExtensionLoader(extPath);
+            var builder = new WebHostBuilder();
+            var startup = Assert.Single(loader.GetStartups());
+
+            var getter = startup.GetType().GetMethod("GetFileProviderAssembly");
+            var startupLoggerAssembly = (Assembly)getter.Invoke(startup, Array.Empty<object>());
+            var startupAssemblyName = startupLoggerAssembly.GetName();
+
+            var hostLoggerAssembly = typeof(IFileProvider).Assembly;
+            var hostAssemblyName = hostLoggerAssembly.GetName();
+
+            // Assert it can execute
+            startup.Configure(builder);
+
+            Assert.NotSame(typeof(IFileProvider).Assembly, startupLoggerAssembly);
+            Assert.True(hostAssemblyName.Version < startupAssemblyName.Version, "Startup extension assembly should be newer");
+            Assert.Equal(hostAssemblyName.Name, startupAssemblyName.Name);
+            Assert.Equal(hostAssemblyName.KeyPair, startupAssemblyName.KeyPair);
+            Assert.Equal(hostAssemblyName.CultureName, startupAssemblyName.CultureName);
+        }
+
 
         private string GetStartupExtensionPath(string name)
         {

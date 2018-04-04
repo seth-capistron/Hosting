@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Microsoft.Extensions.FileProviders.Abstractions</AssemblyName>
+    <AssemblyVersion>999.999.999.999</AssemblyVersion>
+  </PropertyGroup>
+
+</Project>

@@ -18,6 +18,7 @@
     <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithDeps\StartupExtensionWithDeps.csproj" />
     <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithPrivateDeps\StartupExtensionWithPrivateDeps.csproj" />
     <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithSqlite\StartupExtensionWithSqlite.csproj" />
+    <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithWithUpgradedDeps\StartupExtensionWithWithUpgradedDeps.csproj" />
   </ItemGroup>
 
   <ItemGroup>
