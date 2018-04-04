@@ -1,0 +1,31 @@
+<Project>
+  <Import Project="..\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <SiteExtensionReference>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>_ResolvedSiteExtensionReferenceReference</OutputItemType>
+    </SiteExtensionReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="@(SiteExtensionReference)" />
+  </ItemGroup>
+
+  <Target Name="GeneratePathToSiteExtensionReferences"
+          BeforeTargets="CoreCompile;GetAssemblyAttributes"
+          DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Hosting.Tests.SiteExtensionReferenceAttribute" Condition="'%(_ResolvedSiteExtensionReferenceReference.Identity)' != ''">
+        <_Parameter1>%(_ResolvedSiteExtensionReferenceReference.FileName)</_Parameter1>
+        <_Parameter2>%(_ResolvedSiteExtensionReferenceReference.Identity)</_Parameter2>
+      </AssemblyAttribute>
+      <Compile Include="$(MSBuildThisFileDirectory)SiteExtensionReferenceAttribute.cs" Condition="@(_ResolvedSiteExtensionReferenceReference->Count()) != 0" />
+    </ItemGroup>
+  </Target>
+
+</Project>

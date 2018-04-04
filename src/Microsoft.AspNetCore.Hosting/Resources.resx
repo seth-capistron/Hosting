@@ -126,6 +126,9 @@
   <data name="ErrorPageHtml_UnknownLocation" xml:space="preserve">
     <value>Unknown location</value>
   </data>
+  <data name="Error_NullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
   <data name="WebHostBuilder_SingleInstance" xml:space="preserve">
     <value>WebHostBuilder allows creation only of a single instance of WebHost</value>
   </data>

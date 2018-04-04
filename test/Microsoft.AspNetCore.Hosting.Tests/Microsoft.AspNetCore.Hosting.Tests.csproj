@@ -13,6 +13,13 @@
     <ProjectReference Include="..\TestAssets\TestStartupAssembly1\TestStartupAssembly1.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <SiteExtensionReference Include="..\TestAssets\SimpleStartupExtension\SimpleStartupExtension.csproj" />
+    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithDeps\StartupExtensionWithDeps.csproj" />
+    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithPrivateDeps\StartupExtensionWithPrivateDeps.csproj" />
+    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithSqlite\StartupExtensionWithSqlite.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="$(MicrosoftAspNetCoreOwinPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
