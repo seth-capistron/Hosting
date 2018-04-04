@@ -6,25 +6,25 @@
   </PropertyGroup>
 
   <ItemDefinitionGroup>
-    <SiteExtensionReference>
+    <StartupExtensionReference>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>_ResolvedSiteExtensionReferenceReference</OutputItemType>
-    </SiteExtensionReference>
+      <OutputItemType>_ResolvedStartupExtensionReferenceReference</OutputItemType>
+    </StartupExtensionReference>
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ProjectReference Include="@(SiteExtensionReference)" />
+    <ProjectReference Include="@(StartupExtensionReference)" />
   </ItemGroup>
 
-  <Target Name="GeneratePathToSiteExtensionReferences"
+  <Target Name="GeneratePathToStartupExtensionReferences"
           BeforeTargets="CoreCompile;GetAssemblyAttributes"
           DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Hosting.Tests.SiteExtensionReferenceAttribute" Condition="'%(_ResolvedSiteExtensionReferenceReference.Identity)' != ''">
-        <_Parameter1>%(_ResolvedSiteExtensionReferenceReference.FileName)</_Parameter1>
-        <_Parameter2>%(_ResolvedSiteExtensionReferenceReference.Identity)</_Parameter2>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Hosting.Tests.StartupExtensionReferenceAttribute" Condition="'%(_ResolvedStartupExtensionReferenceReference.Identity)' != ''">
+        <_Parameter1>%(_ResolvedStartupExtensionReferenceReference.FileName)</_Parameter1>
+        <_Parameter2>%(_ResolvedStartupExtensionReferenceReference.Identity)</_Parameter2>
       </AssemblyAttribute>
-      <Compile Include="$(MSBuildThisFileDirectory)SiteExtensionReferenceAttribute.cs" Condition="@(_ResolvedSiteExtensionReferenceReference->Count()) != 0" />
+      <Compile Include="$(MSBuildThisFileDirectory)StartupExtensionReferenceAttribute.cs" Condition="@(_ResolvedStartupExtensionReferenceReference->Count()) != 0" />
     </ItemGroup>
   </Target>
 

@@ -74,13 +74,14 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (_preferDefaultLoadContext && !_privateAssemblies.Contains(assemblyName.Name))
             {
-                // If default context is preferred,check first for types in the default context unless the dependency has been declared as private
+                // If default context is preferred, check first for types in the default context unless the dependency has been declared as private
                 try
                 {
-                    var defaultContext = Default.LoadFromAssemblyName(assemblyName);
-                    if (defaultContext != null)
+                    var defaultAssembly = Default.LoadFromAssemblyName(assemblyName);
+                    if (defaultAssembly != null)
                     {
-                        return defaultContext;
+                        // return null so ALC will fallback to loading from Default ALC directly
+                        return null;
                     }
                 }
                 catch

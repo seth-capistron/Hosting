@@ -6,15 +6,15 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class SiteExtensionLoader
+    internal class StartupExtensionLoader
     {
-        private readonly SiteExtensionConfig _config;
+        private readonly StartupExtensionConfig _config;
         private readonly string _extensionDir;
         private ManagedLoadContext _context;
 
-        public SiteExtensionLoader(string configPath)
+        public StartupExtensionLoader(string configPath)
         {
-            _config = new SiteExtensionConfig(configPath);
+            _config = new StartupExtensionConfig(configPath);
             _extensionDir = Path.GetDirectoryName(configPath);
 
             var depsJsonFile = Path.Combine(_extensionDir, Path.GetFileNameWithoutExtension(_config.MainAssembly) + ".deps.json");

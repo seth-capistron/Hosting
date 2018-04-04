@@ -7,13 +7,13 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal sealed class SiteExtensionConfig
+    internal sealed class StartupExtensionConfig
     {
-        public static bool TryLoad(string configFile, out SiteExtensionConfig config)
+        public static bool TryLoad(string configFile, out StartupExtensionConfig config)
         {
             try
             {
-                config = new SiteExtensionConfig(configFile);
+                config = new StartupExtensionConfig(configFile);
                 return true;
             }
             catch
@@ -23,22 +23,22 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        public SiteExtensionConfig(string configFile)
+        public StartupExtensionConfig(string configFile)
         {
             var privateDeps = new HashSet<AssemblyName>();
             PrivateAssemblies = privateDeps;
             var doc = XDocument.Load(configFile, LoadOptions.SetLineInfo);
 
-            if (doc.Root.Name != "SiteExtension")
+            if (doc.Root.Name != "StartupExtension")
             {
-                throw new InvalidDataException("Root element should be 'SiteExtension'");
+                throw new InvalidDataException("Root element should be 'StartupExtension'");
             }
 
             var mainAssembly = doc.Root.Attribute("MainAssembly");
             if (mainAssembly == null || string.IsNullOrEmpty(mainAssembly.Value))
             {
                 IXmlLineInfo line = doc.Root;
-                throw new InvalidDataException($"Missing required attribute 'MainAssembly' for SiteExtension on line {line.LineNumber}");
+                throw new InvalidDataException($"Missing required attribute 'MainAssembly' for StartupExtension on line {line.LineNumber}");
             }
 
             MainAssembly = mainAssembly.Value;

@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <SiteExtensionReference Include="..\TestAssets\SimpleStartupExtension\SimpleStartupExtension.csproj" />
-    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithDeps\StartupExtensionWithDeps.csproj" />
-    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithPrivateDeps\StartupExtensionWithPrivateDeps.csproj" />
-    <SiteExtensionReference Include="..\TestAssets\StartupExtensionWithSqlite\StartupExtensionWithSqlite.csproj" />
+    <StartupExtensionReference Include="..\TestAssets\SimpleStartupExtension\SimpleStartupExtension.csproj" />
+    <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithDeps\StartupExtensionWithDeps.csproj" />
+    <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithPrivateDeps\StartupExtensionWithPrivateDeps.csproj" />
+    <StartupExtensionReference Include="..\TestAssets\StartupExtensionWithSqlite\StartupExtensionWithSqlite.csproj" />
   </ItemGroup>
 
   <ItemGroup>

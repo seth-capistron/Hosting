@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Hosting.Tests
 {
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public sealed class SiteExtensionReferenceAttribute : Attribute
+    public sealed class StartupExtensionReferenceAttribute : Attribute
     {
-        public SiteExtensionReferenceAttribute(string name, string filePath)
+        public StartupExtensionReferenceAttribute(string name, string filePath)
         {
             Name = name;
             FilePath = filePath;

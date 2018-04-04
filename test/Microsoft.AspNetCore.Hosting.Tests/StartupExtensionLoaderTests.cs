@@ -8,13 +8,13 @@ using Xunit;
 namespace Microsoft.AspNetCore.Hosting.Tests
 {
 #if !NET461
-    public class SiteExtensionLoaderTests
+    public class StartupExtensionLoaderTests
     {
         [Fact]
-        public void ItLoadsSimpleSiteExtensionWithoutDependencies()
+        public void ItLoadsSimpleExtensionWithoutDependencies()
         {
-            var extPath = GetSiteExtensionPath("SimpleStartupExtension");
-            var loader = new SiteExtensionLoader(extPath);
+            var extPath = GetStartupExtensionPath("SimpleStartupExtension");
+            var loader = new StartupExtensionLoader(extPath);
             var builder = new WebHostBuilder();
             var startup = Assert.Single(loader.GetStartups());
 
@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ItLoadsExtensionWithDependencies()
         {
-            var extPath = GetSiteExtensionPath("StartupExtensionWithDeps");
-            var loader = new SiteExtensionLoader(extPath);
+            var extPath = GetStartupExtensionPath("StartupExtensionWithDeps");
+            var loader = new StartupExtensionLoader(extPath);
             var builder = new WebHostBuilder();
             var startup = Assert.Single(loader.GetStartups());
 
@@ -49,8 +49,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ItLoadsExtensionsWithNativeDeps()
         {
-            var extPath = GetSiteExtensionPath("StartupExtensionWithSqlite");
-            var loader = new SiteExtensionLoader(extPath);
+            var extPath = GetStartupExtensionPath("StartupExtensionWithSqlite");
+            var loader = new StartupExtensionLoader(extPath);
             var builder = new WebHostBuilder();
             var startup = Assert.Single(loader.GetStartups());
 
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void SiteExtensionsCanDeclarePrivateAssemblies()
+        public void ExtensionsCanDeclarePrivateAssemblies()
         {
-            var extPath = GetSiteExtensionPath("StartupExtensionWithPrivateDeps");
-            var loader = new SiteExtensionLoader(extPath);
+            var extPath = GetStartupExtensionPath("StartupExtensionWithPrivateDeps");
+            var loader = new StartupExtensionLoader(extPath);
             var builder = new WebHostBuilder();
             var startup = Assert.Single(loader.GetStartups());
 
@@ -84,13 +84,13 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal(hostAssemblyName.CultureName, startupAssemblyName.CultureName);
         }
 
-        private string GetSiteExtensionPath(string name)
+        private string GetStartupExtensionPath(string name)
         {
-            var mainAssembly = typeof(SiteExtensionLoaderTests).Assembly
-                .GetCustomAttributes<SiteExtensionReferenceAttribute>()
+            var mainAssembly = typeof(StartupExtensionLoaderTests).Assembly
+                .GetCustomAttributes<StartupExtensionReferenceAttribute>()
                 .First(f => string.Equals(f.Name, name, StringComparison.Ordinal))
                 .FilePath;
-            return Path.Combine(Path.GetDirectoryName(mainAssembly), "siteextension.config");
+            return Path.Combine(Path.GetDirectoryName(mainAssembly), "startupextension.config");
         }
     }
 #endif
