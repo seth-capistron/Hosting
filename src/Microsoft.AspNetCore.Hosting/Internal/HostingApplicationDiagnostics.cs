@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
@@ -67,6 +68,20 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     startTimestamp = Stopwatch.GetTimestamp();
                     RecordBeginRequestDiagnostics(httpContext, startTimestamp);
+                }
+            }
+
+            // Let each registered Correlation Consumer know that a request has begun. This will
+            // allow those consumers to pull relevant correlation data off the request.
+            IEnumerable<ICorrelationConsumer> correlationConsumers =
+                httpContext.RequestServices.GetService(typeof(IEnumerable<ICorrelationConsumer>))
+                    as IEnumerable<ICorrelationConsumer>;
+
+            if (correlationConsumers != null)
+            {
+                foreach(ICorrelationConsumer correlationConsumer in correlationConsumers)
+                {
+                    correlationConsumer.BeginRequest(httpContext, context);
                 }
             }
 
