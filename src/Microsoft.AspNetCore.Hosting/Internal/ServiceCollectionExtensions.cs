@@ -10,23 +10,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     internal static class ServiceCollectionExtensions
     {
-        public static void AddCorrelationConsumer<T>( this IServiceCollection serviceCollection )
-            where T : ICorrelationConsumer, new()
-        {
-            serviceCollection.TryAddSingleton<IList<ICorrelationConsumer>>(
-                new List<ICorrelationConsumer>() );
-
-            IList<ICorrelationConsumer> correlationConsumerList = serviceCollection.FirstOrDefault(
-                descriptor =>
-                    descriptor.ServiceType == typeof( IList<ICorrelationConsumer> ) )
-                ?.ImplementationInstance as IList<ICorrelationConsumer>;
-
-            if ( correlationConsumerList != null )
-            {
-                correlationConsumerList.Add( new T() );
-            }
-        }
-
         public static IServiceCollection Clone(this IServiceCollection serviceCollection)
         {
             IServiceCollection clone = new ServiceCollection();
