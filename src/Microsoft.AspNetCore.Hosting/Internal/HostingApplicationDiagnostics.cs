@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
@@ -62,26 +61,27 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
                 {
-                    context.Activity = StartActivity(httpContext, correlationId);
-                }
-                if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
-                {
-                    startTimestamp = Stopwatch.GetTimestamp();
-                    RecordBeginRequestDiagnostics(httpContext, startTimestamp);
+                    context.Activity = CreateActivity(httpContext, correlationId);
                 }
             }
 
             // Let each registered Correlation Consumer know that a request has begun. This will
             // allow those consumers to pull relevant correlation data off the request.
-            IList<ICorrelationConsumer> correlationConsumers =
-                httpContext.RequestServices?.GetService( typeof( IList<ICorrelationConsumer> ) )
-                    as IList<ICorrelationConsumer>;
-
-            if ( correlationConsumers != null )
+            if (HostingApplication.IsCorrelationConsumerRegistered)
             {
-                foreach ( ICorrelationConsumer correlationConsumer in correlationConsumers )
+                NotifyCorrelationConsumers(httpContext, context);
+            }
+
+            if (diagnosticListenerEnabled)
+            {
+                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
                 {
-                    correlationConsumer.BeginRequest( httpContext, context );
+                    StartActivity(httpContext, context.Activity);
+                }
+                if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
+                {
+                    startTimestamp = Stopwatch.GetTimestamp();
+                    RecordBeginRequestDiagnostics(httpContext, startTimestamp);
                 }
             }
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
+        private Activity CreateActivity(HttpContext httpContext, StringValues requestId)
         {
             var activity = new Activity(ActivityName);
             if (!StringValues.IsNullOrEmpty(requestId))
@@ -277,6 +277,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
+            return activity;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private Activity StartActivity(HttpContext httpContext, Activity activity)
+        {
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
@@ -287,6 +293,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             return activity;
+        }
+
+        [MethodImpl( MethodImplOptions.NoInlining )]
+        private void NotifyCorrelationConsumers(HttpContext httpContext, HostingApplication.Context context)
+        {
+            foreach (var correlationConsumer in HostingApplication.CorrelationConsumers)
+            {
+                correlationConsumer.BeginRequest(httpContext, context);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
