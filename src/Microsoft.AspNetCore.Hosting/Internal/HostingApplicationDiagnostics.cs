@@ -61,7 +61,22 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
                 {
-                    context.Activity = StartActivity(httpContext, correlationId);
+                    context.Activity = CreateActivity(httpContext, correlationId);
+                }
+            }
+
+            // Let each registered Correlation Consumer know that a request has begun. This will
+            // allow those consumers to pull relevant correlation data off the request.
+            if (HostingApplication.IsCorrelationConsumerRegistered)
+            {
+                NotifyCorrelationConsumers(httpContext, context);
+            }
+
+            if (diagnosticListenerEnabled)
+            {
+                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
+                {
+                    StartActivity(httpContext, context.Activity);
                 }
                 if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
                 {
@@ -240,7 +255,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
+        private Activity CreateActivity(HttpContext httpContext, StringValues requestId)
         {
             var activity = new Activity(ActivityName);
             if (!StringValues.IsNullOrEmpty(requestId))
@@ -262,6 +277,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
+            return activity;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private Activity StartActivity(HttpContext httpContext, Activity activity)
+        {
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
@@ -272,6 +293,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             return activity;
+        }
+
+        [MethodImpl( MethodImplOptions.NoInlining )]
+        private void NotifyCorrelationConsumers(HttpContext httpContext, HostingApplication.Context context)
+        {
+            foreach (var correlationConsumer in HostingApplication.CorrelationConsumers)
+            {
+                correlationConsumer.BeginRequest(httpContext, context);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
