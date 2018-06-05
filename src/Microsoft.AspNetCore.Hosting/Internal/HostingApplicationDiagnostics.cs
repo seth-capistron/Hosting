@@ -49,45 +49,34 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
-            // id from the header
-            StringValues correlationId;
-            if (diagnosticListenerEnabled || loggingEnabled)
+            if (HostingApplication.IsCustomCorrelationConsumerRegistered ||
+                (diagnosticListenerEnabled && _diagnosticListener.IsEnabled( ActivityName, httpContext )))
             {
-                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+                context.Activity = new Activity( ActivityName );
+
+                // Let each registered Correlation Consumer know that a request has begun. This will
+                // allow those consumers to pull relevant correlation data off the request.
+                NotifyCorrelationConsumers( httpContext, context );
             }
 
-            if (diagnosticListenerEnabled)
+            if (HostingApplication.IsCustomCorrelationConsumerRegistered ||
+                (diagnosticListenerEnabled && _diagnosticListener.IsEnabled( ActivityName, httpContext )))
             {
-                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
-                {
-                    context.Activity = CreateActivity(httpContext, correlationId);
-                }
+                StartActivity( httpContext, context.Activity );
             }
 
-            // Let each registered Correlation Consumer know that a request has begun. This will
-            // allow those consumers to pull relevant correlation data off the request.
-            if (HostingApplication.IsCorrelationConsumerRegistered)
+            if (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
             {
-                NotifyCorrelationConsumers(httpContext, context);
-            }
-
-            if (diagnosticListenerEnabled)
-            {
-                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
-                {
-                    StartActivity(httpContext, context.Activity);
-                }
-                if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
-                {
-                    startTimestamp = Stopwatch.GetTimestamp();
-                    RecordBeginRequestDiagnostics(httpContext, startTimestamp);
-                }
+                startTimestamp = Stopwatch.GetTimestamp();
+                RecordBeginRequestDiagnostics( httpContext, startTimestamp );
             }
 
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
             if (loggingEnabled)
             {
+                StringValues correlationId;
+                httpContext.Request.Headers.TryGetValue( RequestIdHeaderName, out correlationId );
+
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.

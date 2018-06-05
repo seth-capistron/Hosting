@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly IHttpContextFactory _httpContextFactory;
         private HostingApplicationDiagnostics _diagnostics;
 
-        internal static bool IsCorrelationConsumerRegistered = false;
-        internal static List<ICorrelationConsumer> CorrelationConsumers = new List<ICorrelationConsumer>();
+        internal static bool IsCustomCorrelationConsumerRegistered = false;
+        internal static List<ICorrelationConsumer> CorrelationConsumers =
+            new List<ICorrelationConsumer>() { new LegacyActivityCorrelationConsumer() };
 
         public HostingApplication(
             RequestDelegate application,
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             if ( correlationConsumer != null )
             {
-                IsCorrelationConsumerRegistered = true;
+                IsCustomCorrelationConsumerRegistered = true;
                 CorrelationConsumers.Add( correlationConsumer );
             }
         }
