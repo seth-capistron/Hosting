@@ -49,30 +49,34 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
-            // id from the header
-            StringValues correlationId;
-            if (diagnosticListenerEnabled || loggingEnabled)
+            if (HostingApplication.IsCustomCorrelationConsumerRegistered ||
+                (diagnosticListenerEnabled && _diagnosticListener.IsEnabled( ActivityName, httpContext )))
             {
-                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+                context.Activity = new Activity( ActivityName );
+
+                // Let each registered Correlation Consumer know that a request has begun. This will
+                // allow those consumers to pull relevant correlation data off the request.
+                NotifyCorrelationConsumers( httpContext, context );
             }
 
-            if (diagnosticListenerEnabled)
+            if (HostingApplication.IsCustomCorrelationConsumerRegistered ||
+                (diagnosticListenerEnabled && _diagnosticListener.IsEnabled( ActivityName, httpContext )))
             {
-                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
-                {
-                    context.Activity = StartActivity(httpContext, correlationId);
-                }
-                if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
-                {
-                    startTimestamp = Stopwatch.GetTimestamp();
-                    RecordBeginRequestDiagnostics(httpContext, startTimestamp);
-                }
+                StartActivity( httpContext, context.Activity );
+            }
+
+            if (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
+            {
+                startTimestamp = Stopwatch.GetTimestamp();
+                RecordBeginRequestDiagnostics( httpContext, startTimestamp );
             }
 
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
             if (loggingEnabled)
             {
+                StringValues correlationId;
+                httpContext.Request.Headers.TryGetValue( RequestIdHeaderName, out correlationId );
+
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
@@ -240,7 +244,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
+        private Activity CreateActivity(HttpContext httpContext, StringValues requestId)
         {
             var activity = new Activity(ActivityName);
             if (!StringValues.IsNullOrEmpty(requestId))
@@ -262,6 +266,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
+            return activity;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private Activity StartActivity(HttpContext httpContext, Activity activity)
+        {
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
@@ -272,6 +282,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             return activity;
+        }
+
+        [MethodImpl( MethodImplOptions.NoInlining )]
+        private void NotifyCorrelationConsumers(HttpContext httpContext, HostingApplication.Context context)
+        {
+            foreach (var correlationConsumer in HostingApplication.CorrelationConsumers)
+            {
+                correlationConsumer.BeginRequest(httpContext, context);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

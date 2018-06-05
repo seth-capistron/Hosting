@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -16,6 +17,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory _httpContextFactory;
         private HostingApplicationDiagnostics _diagnostics;
+
+        internal static bool IsCustomCorrelationConsumerRegistered = false;
+        internal static List<ICorrelationConsumer> CorrelationConsumers =
+            new List<ICorrelationConsumer>() { new LegacyActivityCorrelationConsumer() };
 
         public HostingApplication(
             RequestDelegate application,
@@ -33,7 +38,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             var context = new Context();
             var httpContext = _httpContextFactory.Create(contextFeatures);
-
+            
             _diagnostics.BeginRequest(httpContext, ref context);
 
             context.HttpContext = httpContext;
@@ -53,6 +58,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _diagnostics.RequestEnd(httpContext, exception, context);
             _httpContextFactory.Dispose(httpContext);
             _diagnostics.ContextDisposed(context);
+        }
+
+        public static void RegisterCorrelationConsumer( ICorrelationConsumer correlationConsumer )
+        {
+            if ( correlationConsumer != null )
+            {
+                IsCustomCorrelationConsumerRegistered = true;
+                CorrelationConsumers.Add( correlationConsumer );
+            }
         }
 
         public struct Context
